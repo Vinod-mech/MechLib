@@ -1,0 +1,21 @@
+requirements:
+open command prompt or powershell
+change directory to library folder using cd in windows
+1. python -m venv venv
+2. On Windows (Command Prompt):
+
+  venv\Scripts\activate
+  On PowerShell:
+
+  .\venv\Scripts\activate
+
+3. pip install flask
+4.pip install flask_sqlalchemy flask_wtf
+5.pip install flask-login
+6. python app.py
+7.http://192.168.1.6:5000/ open this in any browser
+
+pip install flask
+pip install flask_sqlalchemy flask_wtf
+pip install flask-login
+python app.py
