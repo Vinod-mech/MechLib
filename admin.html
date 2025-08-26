@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Panel - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <!-- Header -->
+        <h1 class="display-5 mb-4">
+            <i class="fas fa-cog me-3"></i>
+            Admin Panel
+        </h1>
+
+        <!-- Statistics Cards -->
+        <div class="row mb-4">
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card bg-primary bg-opacity-10">
+                    <div class="card-body text-center">
+                        <i class="fas fa-users fa-2x text-primary mb-2"></i>
+                        <h4>{{ stats.total_users }}</h4>
+                        <small class="text-muted">Total Users</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card bg-success bg-opacity-10">
+                    <div class="card-body text-center">
+                        <i class="fas fa-book fa-2x text-success mb-2"></i>
+                        <h4>{{ stats.total_resources }}</h4>
+                        <small class="text-muted">Total Resources</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card bg-info bg-opacity-10">
+                    <div class="card-body text-center">
+                        <i class="fas fa-graduation-cap fa-2x text-info mb-2"></i>
+                        <h4>{{ stats.total_subjects }}</h4>
+                        <small class="text-muted">Total Subjects</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card bg-warning bg-opacity-10">
+                    <div class="card-body text-center">
+                        <i class="fas fa-download fa-2x text-warning mb-2"></i>
+                        <h4>{{ stats.total_downloads }}</h4>
+                        <small class="text-muted">Total Downloads</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <ul class="nav nav-tabs mb-4" id="adminTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="subjects-tab" data-bs-toggle="tab" 
+                        data-bs-target="#subjects" type="button" role="tab">
+                    <i class="fas fa-book me-1"></i>Subjects
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="resources-tab" data-bs-toggle="tab" 
+                        data-bs-target="#resources" type="button" role="tab">
+                    <i class="fas fa-file me-1"></i>Recent Resources
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="adminTabsContent">
+            <!-- Subjects Tab -->
+            <div class="tab-pane fade show active" id="subjects" role="tabpanel">
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">All Subjects</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Year</th>
+                                                <th>Subject Name</th>
+                                                <th>Code</th>
+                                                <th>Resources</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for subject in subjects %}
+                                            <tr>
+                                                <td>{{ subject.year.name }}</td>
+                                                <td>
+                                                    <a href="{{ url_for('subject_view', subject_id=subject.id) }}">
+                                                        {{ subject.name }}
+                                                    </a>
+                                                </td>
+                                                <td>{{ subject.code or '-' }}</td>
+                                                <td>
+                                                    <span class="badge bg-primary">{{ subject.resources|length }}</span>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">Add New Subject</h5>
+                            </div>
+                            <div class="card-body">
+                                <form method="POST" action="{{ url_for('add_subject') }}">
+                                    <div class="mb-3">
+                                        <label for="name" class="form-label">Subject Name</label>
+                                        <input type="text" class="form-control" id="name" name="name" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="code" class="form-label">Subject Code (Optional)</label>
+                                        <input type="text" class="form-control" id="code" name="code">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="year_id" class="form-label">Academic Year</label>
+                                        <select class="form-select" id="year_id" name="year_id" required>
+                                            <option value="">Select Year</option>
+                                            {% for year in years %}
+                                            <option value="{{ year.id }}">{{ year.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-success">
+                                            <i class="fas fa-plus me-1"></i>Add Subject
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resources Tab -->
+            <div class="tab-pane fade" id="resources" role="tabpanel">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Recent Resources (Last 20)</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if resources %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Subject</th>
+                                        <th>Year</th>
+                                        <th>Uploaded By</th>
+                                        <th>Upload Date</th>
+                                        <th>Downloads</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for resource in resources %}
+                                    <tr>
+                                        <td>
+                                            <i class="fas fa-file-{{ 'pdf' if resource.get_file_extension() == 'pdf' else 'alt' }} me-1 text-danger"></i>
+                                            {{ resource.title }}
+                                        </td>
+                                        <td>{{ resource.subject.name }}</td>
+                                        <td>{{ resource.subject.year.name }}</td>
+                                        <td>{{ resource.uploader.username }}</td>
+                                        <td>{{ resource.upload_date.strftime('%Y-%m-%d') }}</td>
+                                        <td>
+                                            <span class="badge bg-info">{{ resource.download_count }}</span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{{ url_for('download_resource', resource_id=resource.id) }}" 
+                                                   class="btn btn-outline-primary">
+                                                    <i class="fas fa-download"></i>
+                                                </a>
+                                                <form method="POST" style="display: inline;" 
+                                                      action="{{ url_for('delete_resource', resource_id=resource.id) }}"
+                                                      onsubmit="return confirm('Are you sure you want to delete this resource?')">
+                                                    <button type="submit" class="btn btn-outline-danger">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-file-alt fa-2x text-muted mb-2"></i>
+                            <p class="text-muted">No resources uploaded yet.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

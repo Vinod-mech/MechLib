@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}Search - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <!-- Header -->
+        <h1 class="display-5 mb-4">
+            <i class="fas fa-search me-3"></i>
+            Search Resources
+        </h1>
+
+        <!-- Search Form -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <form method="GET" action="{{ url_for('search') }}">
+                    <div class="row">
+                        <div class="col-lg-4 mb-3">
+                            <label for="q" class="form-label">Search Keywords</label>
+                            <input type="text" class="form-control" id="q" name="q" 
+                                   value="{{ query }}" placeholder="Search titles, descriptions, subjects...">
+                        </div>
+                        <div class="col-lg-3 mb-3">
+                            <label for="year" class="form-label">Academic Year</label>
+                            <select class="form-select" id="year" name="year">
+                                <option value="">All Years</option>
+                                {% for year in years %}
+                                <option value="{{ year.id }}" {% if year_filter|string == year.id|string %}selected{% endif %}>
+                                    {{ year.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-lg-3 mb-3">
+                            <label for="subject" class="form-label">Subject</label>
+                            <select class="form-select" id="subject" name="subject">
+                                <option value="">All Subjects</option>
+                                {% for subject in subjects %}
+                                <option value="{{ subject.id }}" {% if subject_filter|string == subject.id|string %}selected{% endif %}>
+                                    {{ subject.year.name }} - {{ subject.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-lg-2 mb-3">
+                            <label class="form-label">&nbsp;</label>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-search me-1"></i>
+                                    Search
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Search Results -->
+        {% if query or year_filter or subject_filter %}
+        <div class="mb-3">
+            <h5>Search Results
+                {% if resources %}
+                <span class="badge bg-primary">{{ resources|length }} found</span>
+                {% endif %}
+            </h5>
+            <p class="text-muted mb-0">
+                {% if query %}Keywords: <strong>{{ query }}</strong>{% endif %}
+                {% if year_filter %}
+                    {% if query %} | {% endif %}
+                    Year: <strong>{{ years|selectattr('id', 'equalto', year_filter|int)|first|attr('name') }}</strong>
+                {% endif %}
+                {% if subject_filter %}
+                    {% if query or year_filter %} | {% endif %}
+                    Subject: <strong>{{ subjects|selectattr('id', 'equalto', subject_filter|int)|first|attr('name') }}</strong>
+                {% endif %}
+            </p>
+        </div>
+        
+        {% if resources %}
+        <div class="row">
+            {% for resource in resources %}
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-file-{{ 'pdf' if resource.get_file_extension() == 'pdf' else 'alt' }} me-2 {% if resource.get_file_extension() == 'pdf' %}text-danger{% else %}text-primary{% endif %}"></i>
+                            {{ resource.title }}
+                        </h5>
+                        
+                        <p class="card-text">
+                            <small class="text-muted">
+                                <i class="fas fa-calendar me-1"></i>{{ resource.subject.year.name }} - {{ resource.subject.name }}
+                            </small>
+                        </p>
+                        
+                        {% if resource.description %}
+                        <p class="card-text text-muted">{{ resource.description[:100] }}{% if resource.description|length > 100 %}...{% endif %}</p>
+                        {% endif %}
+                        
+                        <div class="row text-center mb-3">
+                            <div class="col-6">
+                                <small class="text-muted d-block">Uploaded</small>
+                                <small class="fw-bold">{{ resource.upload_date.strftime('%Y-%m-%d') }}</small>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted d-block">Downloads</small>
+                                <small class="fw-bold">{{ resource.download_count }}</small>
+                            </div>
+                        </div>
+                        
+                        {% if resource.get_file_extension().lower() == 'pdf' %}
+                        <div class="d-grid">
+                            <a href="{{ url_for('view_resource', resource_id=resource.id) }}" 
+                               class="btn btn-primary">
+                                <i class="fas fa-eye me-1"></i>
+                                View PDF
+                            </a>
+                        </div>
+                        {% else %}
+                        <div class="d-grid">
+                            <a href="{{ url_for('download_resource', resource_id=resource.id) }}" 
+                               class="btn btn-primary">
+                                <i class="fas fa-download me-1"></i>
+                                Download
+                            </a>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="mt-2">
+                            <span class="badge bg-primary me-1">{{ resource.get_file_extension().upper() }}</span>
+                            {% if resource.file_size %}
+                            <span class="badge bg-light">{{ (resource.file_size / 1024 / 1024)|round(2) }} MB</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+            <h3 class="text-muted">No Results Found</h3>
+            <p class="text-muted">Try adjusting your search criteria.</p>
+        </div>
+        {% endif %}
+        
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+            <h3 class="text-muted">Search Resources</h3>
+            <p class="text-muted">Use the search form above to find specific resources, subjects, or materials.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
